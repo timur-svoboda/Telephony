@@ -394,24 +394,27 @@ class SmsMethodCallHandler(
   }
 
   override fun onReceive(ctx: Context?, intent: Intent?) {
-    if (intent != null) {
-      when (intent.action) {
-        Constants.ACTION_SMS_SENT -> {
+    try {
+      if (intent != null) {
+        when (intent.action) {
+          Constants.ACTION_SMS_SENT -> {
             if (resultCode == Activity.RESULT_OK) {
-                foregroundChannel.invokeMethod(SMS_SENT, null)
+              foregroundChannel.invokeMethod(SMS_SENT, null)
             } else {
-                foregroundChannel.invokeMethod(SMS_FAIL, mapOf("errorCode" to resultCode))
+              foregroundChannel.invokeMethod(SMS_FAIL, mapOf("errorCode" to resultCode))
             }
-        }
-        Constants.ACTION_SMS_DELIVERED -> {
+          }
+          Constants.ACTION_SMS_DELIVERED -> {
             if (resultCode == Activity.RESULT_OK) {
-                foregroundChannel.invokeMethod(SMS_DELIVERED, null)
+              foregroundChannel.invokeMethod(SMS_DELIVERED, null)
             } else {
-                foregroundChannel.invokeMethod(SMS_FAIL, mapOf("errorCode" to resultCode))
+              foregroundChannel.invokeMethod(SMS_FAIL, mapOf("errorCode" to resultCode))
             }
-            context.unregisterReceiver(this)
+          }
         }
       }
+    } finally {
+      context.unregisterReceiver(this)
     }
   }
 }
