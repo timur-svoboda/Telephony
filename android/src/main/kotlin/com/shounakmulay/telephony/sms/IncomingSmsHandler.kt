@@ -85,17 +85,19 @@ class IncomingSmsReceiver : BroadcastReceiver() {
     }
 
     private fun processInBackground(context: Context, sms: HashMap<String, Any?>) {
-        IncomingSmsHandler.apply {
-            if (!isIsolateRunning.get()) {
-                initialize(context)
-                val preferences =
-                    context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
-                val backgroundCallbackHandle =
-                    preferences.getLong(SHARED_PREFS_BACKGROUND_SETUP_HANDLE, 0)
-                startBackgroundIsolate(context, backgroundCallbackHandle)
-                backgroundMessageQueue.add(sms)
-            } else {
-                executeDartCallbackInBackgroundIsolate(context, sms)
+        synchronized(IncomingSmsHandler) {
+            IncomingSmsHandler.apply {
+                if (!isIsolateRunning.get()) {
+                    initialize(context)
+                    val preferences =
+                        context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+                    val backgroundCallbackHandle =
+                        preferences.getLong(SHARED_PREFS_BACKGROUND_SETUP_HANDLE, 0)
+                    startBackgroundIsolate(context, backgroundCallbackHandle)
+                    backgroundMessageQueue.add(sms)
+                } else {
+                    executeDartCallbackInBackgroundIsolate(context, sms)
+                }
             }
         }
     }
